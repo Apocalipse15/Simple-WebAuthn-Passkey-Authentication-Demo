@@ -1,5 +1,3 @@
-# Simple-WebAuthn-Passkey-Authentication-Demo
-
 # Simple WebAuthn Passkey Authentication Demo
 
 A minimal yet functional implementation of passwordless authentication using WebAuthn/FIDO2 passkeys. This project demonstrates how modern browsers enable secure, phishing-resistant authentication through public-key cryptography, eliminating the need for traditional passwords.
