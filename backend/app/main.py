@@ -2,7 +2,7 @@ import uvicorn
 import logging
 
 logging.basicConfig(
-    level=logging.DEBUG,  # or INFO if you prefer less noise
+    level=logging.DEBUG,
     format="%(asctime)s [%(levelname)s] [%(name)s] %(message)s",
 )
 

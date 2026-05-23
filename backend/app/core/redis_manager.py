@@ -71,5 +71,8 @@ class RedisManager:
         result = await self.client.delete(key)
         return result == 1
     
+    async def delete_session(self, token: str):
+        key = f"session:{token}"
+        await self.client.delete(key)
 
 redis_manager = RedisManager()

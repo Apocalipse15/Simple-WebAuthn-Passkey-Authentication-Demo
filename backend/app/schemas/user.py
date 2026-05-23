@@ -9,7 +9,6 @@ class UserCreate(BaseModel):
     display_name: str
     is_verified: bool = False
 
-    # we'll accept base64 for bytes (clean API design)
     webauthn_user_handle: str = Field(
         description="Base64-encoded bytes"
     )

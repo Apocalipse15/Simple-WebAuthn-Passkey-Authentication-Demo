@@ -3,7 +3,7 @@ import base64
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.responses import ORJSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -21,10 +21,6 @@ from app.api.auth import router as auth_router
 
 logger = logging.getLogger(__name__)
 
-
-# -------------------------
-# LIFESPAN
-# -------------------------
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("Starting %s in %s mode", settings.APP_NAME, settings.ENV)
@@ -38,10 +34,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     logger.info("Shutting down application")
 
-
-# -------------------------
-# APP FACTORY
-# -------------------------
 def create_app() -> FastAPI:
     app = FastAPI(
         title=settings.APP_NAME,
@@ -53,9 +45,6 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
-    # -------------------------
-    # CORS (IMPORTANT for WebAuthn frontend)
-    # -------------------------
     app.add_middleware(
         CORSMiddleware,
         allow_origins=[
@@ -67,14 +56,36 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    # -------------------------
-    # ROUTERS
-    # -------------------------
+    @app.middleware("http")
+    async def log_requests(request: Request, call_next):
+        logger.info("----- REQUEST START -----")
+
+        logger.info("Method: %s", request.method)
+        logger.info("URL: %s", request.url)
+
+        headers = dict(request.headers)
+        logger.info("Headers: %s", headers)
+
+        logger.info("Cookies: %s", request.cookies)
+
+        body = await request.body()
+        if body:
+            try:
+                logger.info("Body: %s", body.decode("utf-8"))
+            except Exception:
+                logger.info("Body: <binary data>")
+
+        response = await call_next(request)
+
+        logger.info("Status code: %s", response.status_code)
+        logger.info("----- REQUEST END -----")
+
+        return response
+
     app.include_router(auth_router)
 
-    # -------------------------
-    # BASIC ROUTES
-    # -------------------------
+# Auxiliary endpoints
+
     @app.get("/")
     async def root():
         return {"message": "Hello, world"}
@@ -93,15 +104,11 @@ def create_app() -> FastAPI:
         result = await db.execute(select(User))
         return result.scalars().all()
 
-    # -------------------------
-    # CREATE USER (FIXED)
-    # -------------------------
     @app.post("/users", response_model=UserRead)
     async def create_user(
         payload: UserCreate,
         db: AsyncSession = Depends(get_session),
     ):
-        # check existing user
         result = await db.execute(
             select(User).where(User.username == payload.username)
         )
@@ -110,13 +117,11 @@ def create_app() -> FastAPI:
         if existing_user:
             raise HTTPException(status_code=400, detail="Username already exists")
 
-        # base64 decode
         try:
             user_handle_bytes = base64.b64decode(payload.webauthn_user_handle)
         except Exception:
             raise HTTPException(status_code=400, detail="Invalid base64 user handle")
 
-        # create user
         user = User(
             username=payload.username,
             display_name=payload.displayname,

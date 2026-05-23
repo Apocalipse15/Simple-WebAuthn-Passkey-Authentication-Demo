@@ -10,7 +10,6 @@ export type User = {
 
 export const authStore = atom<User>(null)
 
-// helper functions
 export function setUser(user: User) {
   authStore.set(user)
 }

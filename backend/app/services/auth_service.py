@@ -8,7 +8,6 @@ import secrets
 from app.core.redis_manager import redis_manager
 from app.core.passkey.passkey_manager import passkey_manager
 from app.config import settings
-from app.core.encoding import b64url_encode
 import base64
 from app.config import WEBAUTHN_USER_HANDLE_BYTES
 from sqlmodel import select
@@ -124,9 +123,6 @@ class AuthService:
 
         await session.commit()
         await session.refresh(user)
-
-        # STORE CREDENTIAL
-
 
         logger.info("Completed registration for user: %s", body.username)
         return user

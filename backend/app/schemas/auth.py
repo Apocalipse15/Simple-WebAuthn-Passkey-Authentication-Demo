@@ -9,9 +9,6 @@ class RegistrationBeginRequest(BaseModel):
     display_name: str
 
 class RegistrationCompleteRequest(BaseModel):
-    """
-    Request to complete passkey registration
-    """
     username: str = Field(min_length = settings.USERNAME_MIN_LENGTH, max_length = settings.USERNAME_MAX_LENGTH)
     credential: dict[str, Any]
     device_name: str | None = Field(
@@ -20,16 +17,10 @@ class RegistrationCompleteRequest(BaseModel):
     )
 
 class RegistrationOptionsResponse(BaseModel):
-    """
-    WebAuthn registration options returned to client
-    """
     options: dict[str, Any]
     challenge: bytes
 
 class VerifiedRegistration(BaseModel):
-    """
-    Verified WebAuthn registration data
-    """
     credential_id: bytes
     credential_public_key: bytes
     sign_count: int
@@ -45,9 +36,6 @@ class VerifiedRegistration(BaseModel):
 
 
 class AuthenticationBeginRequest(BaseModel):
-    """
-    Request to begin passkey authentication
-    """
     username: str | None = Field(
         default = None,
         min_length = settings.USERNAME_MIN_LENGTH,
@@ -55,9 +43,6 @@ class AuthenticationBeginRequest(BaseModel):
     )
 
 class AuthenticationCompleteRequest(BaseModel):
-    """
-    Request to complete passkey authentication
-    """
     username: str | None = Field(
         default = None,
         min_length = settings.USERNAME_MIN_LENGTH,

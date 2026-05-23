@@ -30,7 +30,7 @@ async def issue_session(response: Response, user: User) -> str:
         value = token,
         max_age = settings.SESSION_TTL_SECONDS,
         httponly = True,
-        secure = False, # Change to work with .env
+        secure = False, # Change in the future to work with .env
         samesite = "lax",
         path = "/",
     )
@@ -50,3 +50,16 @@ async def current_user(chat_session: str | None = Cookie(default = None, alias =
     if not user or not user.is_active:
         raise HTTPException(status_code = status.HTTP_401_UNAUTHORIZED, detail = "User not found")
     return user
+
+async def revoke_session(response: Response, token: str | None) -> None:
+    if token:
+        await redis_manager.delete_session(token)
+    response.delete_cookie(
+        key = settings.SESSION_COOKIE_NAME,
+        path = "/",
+    )
+
+async def session_token_from_cookie(
+    chat_session: str | None = Cookie(default = None, alias = settings.SESSION_COOKIE_NAME),
+) -> str | None:
+    return chat_session

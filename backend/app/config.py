@@ -6,15 +6,11 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 ENV_FILE = BASE_DIR / ".env"
 
-# WebAuthn user handle
 WEBAUTHN_USER_HANDLE_BYTES = 64
 
-
 class Settings(BaseSettings):
-    # --- Environment ---
     ENV: Literal["dev", "prod", "test"] = "dev"
 
-    # --- App ---
     APP_NAME: str = "FastAPI App"
     APP_DESCRIPTION: str = "API"
     APP_VERSION: str = "0.1.0"
@@ -22,10 +18,8 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     PORT: int = 8000
 
-    # --- Security ---
     SECRET_KEY: str
 
-    # --- Database (structured) ---
     DB_HOST: str
     DB_PORT: int = 5432
     DB_NAME: str
